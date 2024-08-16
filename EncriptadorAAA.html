@@ -1,0 +1,524 @@
+<html><head><base href="https://websim.io/apps/text-cipher-parallax/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cifrado y Descifrado de Texto con Parallax</title>
+<style>
+  :root {
+    --primary-color: #4CAF50;
+    --secondary-color: #45a049;
+    --text-color: #ffffff;
+    --container-color: rgba(51, 51, 51, 0.8);
+    --error-color: #ff6b6b;
+  }
+
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .parallax-container {
+    perspective: 1px;
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  .parallax-layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .parallax-back {
+    transform: translateZ(-1px) scale(2);
+  }
+
+  .sky {
+    background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+    transition: background 0.5s ease;
+  }
+
+  .stars {
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+      radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .sun, .moon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: top 0.5s ease;
+  }
+
+  .sun {
+    background: radial-gradient(circle, #ffdb58 20%, #ffa500 80%);
+    box-shadow: 0 0 50px #ffa500;
+    top: 50px;
+  }
+
+  .moon {
+    background: radial-gradient(circle, #f0f0f0 20%, #d3d3d3 80%);
+    box-shadow: 0 0 20px #d3d3d3;
+    top: -150px;
+  }
+
+  .content {
+    position: relative;
+    padding: 50px 0;
+    background-color: var(--container-color);
+    color: var(--text-color);
+  }
+
+  .container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    animation: neon 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes neon {
+    from {
+      text-shadow: 0 0 5px var(--primary-color),
+                   0 0 10px var(--primary-color),
+                   0 0 15px var(--primary-color),
+                   0 0 20px var(--primary-color);
+    }
+    to {
+      text-shadow: 0 0 10px var(--primary-color),
+                   0 0 20px var(--primary-color),
+                   0 0 30px var(--primary-color),
+                   0 0 40px var(--primary-color);
+    }
+  }
+
+  h3 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+  }
+
+  .color-picker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .color-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 5px;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(255,255,255,0.3);
+    transition: transform 0.3s ease;
+  }
+
+  .color-option:hover {
+    transform: scale(1.1);
+  }
+
+  .button, .file-label {
+    background-color: var(--primary-color);
+    border: none;
+    color: #000000;
+    padding: 12px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+
+  .button:hover, .file-label:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255,255,255,0.2);
+  }
+
+  textarea {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 15px;
+    padding: 12px;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    resize: vertical;
+    background-color: rgba(34, 34, 34, 0.8);
+    color: var(--text-color);
+    box-sizing: border-box;
+  }
+
+  select {
+    padding: 10px;
+    margin-right: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--primary-color);
+    background-color: rgba(34, 34, 34, 0.8);
+    color: var(--text-color);
+  }
+
+  .result-container {
+    display: flex;
+    margin-top: 30px;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+
+  .result-text, .ascii-table {
+    flex: 1 1 100%;
+    background-color: rgba(34, 34, 34, 0.8);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    box-sizing: border-box;
+  }
+
+  .ascii-table {
+    overflow-x: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid var(--primary-color);
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background-color: var(--primary-color);
+    color: #000000;
+  }
+
+  .file-input {
+    display: none;
+  }
+
+  .input-section, .control-section {
+    margin-bottom: 30px;
+    background-color: rgba(34, 34, 34, 0.8);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(255,255,255,0.1);
+  }
+
+  .control-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .error-message {
+    background-color: var(--error-color);
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: center;
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .button, .file-label {
+      width: 100%;
+      margin: 5px 0;
+    }
+
+    select {
+      width: 100%;
+      margin: 5px 0;
+    }
+
+    .control-section {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    .color-option {
+      width: 25px;
+      height: 25px;
+    }
+
+    .result-text, .ascii-table {
+      padding: 10px;
+    }
+
+    textarea {
+      height: 120px;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+    }
+
+    .result-container {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="parallax-container">
+    <div class="parallax-layer parallax-back sky"></div>
+    <div class="parallax-layer parallax-back stars"></div>
+    <div class="parallax-layer parallax-back">
+      <div class="sun"></div>
+      <div class="moon"></div>
+    </div>
+    <div class="parallax-layer content">
+      <div class="container">
+        <h1>Cifrado y Descifrado de Texto</h1>
+        
+        <div class="color-picker">
+          <div class="color-option" style="background-color: #4CAF50;" onclick="changeTheme('#4CAF50', '#45a049')"></div>
+          <div class="color-option" style="background-color: #2196F3;" onclick="changeTheme('#2196F3', '#1E88E5')"></div>
+          <div class="color-option" style="background-color: #FFC107;" onclick="changeTheme('#FFC107', '#FFB300')"></div>
+          <div class="color-option" style="background-color: #E91E63;" onclick="changeTheme('#E91E63', '#D81B60')"></div>
+          <div class="color-option" style="background-color: #9C27B0;" onclick="changeTheme('#9C27B0', '#8E24AA')"></div>
+        </div>
+        
+        <div class="input-section">
+          <textarea id="inputText" placeholder="Escribe o carga tu texto aquí..."></textarea>
+          <div id="errorMessage" class="error-message"></div>
+        </div>
+        
+        <div class="control-section">
+          <input type="file" id="fileInput" accept=".txt" class="file-input">
+          <label for="fileInput" class="file-label">Cargar archivo de texto</label>
+          
+          <select id="cipherSize">
+            <option value="2">2 bytes</option>
+            <option value="4">4 bytes</option>
+            <option value="8">8 bytes</option>
+            <option value="16">16 bytes</option>
+          </select>
+          
+          <button class="button" onclick="cipher()">Cifrar Texto</button>
+          <button class="button" onclick="decipher()">Descifrar Texto</button>
+          <button class="button" onclick="saveFiles()">Guardar archivos</button>
+        </div>
+        
+        <div class="result-container">
+          <div class="result-text">
+            <h3>Resultado:</h3>
+            <textarea id="outputText" readonly></textarea>
+          </div>
+          <div class="ascii-table">
+            <h3>Tabla ASCII utilizada:</h3>
+            <div id="asciiTableContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let asciiEquivalence = {};
+    let cipherSize = 2;
+
+    function changeTheme(primaryColor, secondaryColor) {
+      document.documentElement.style.setProperty('--primary-color', primaryColor);
+      document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (file.name.endsWith('.txt')) {
+            document.getElementById('inputText').value = e.target.result;
+            document.getElementById('errorMessage').style.display = 'none';
+          } else {
+            document.getElementById('errorMessage').textContent = 'Error: Tipo de archivo incorrecto. Por favor, sube un archivo .txt';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('inputText').value = '';
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function loadAsciiTable(content) {
+      const lines = content.split('\n');
+      asciiEquivalence = {};
+      for (let i = 1; i < lines.length; i++) {
+        const [char, decimal, hex] = lines[i].split(',');
+        if (char && decimal && hex) {
+          asciiEquivalence[char] = { decimal: parseInt(decimal), hex: hex };
+        }
+      }
+      generateAsciiTable();
+    }
+
+    function saveFiles() {
+      const cipherSize = document.getElementById('cipherSize').value;
+      const outputText = document.getElementById('outputText').value;
+      
+      // Save output text
+      const outputBlob = new Blob([outputText], {type: 'text/plain'});
+      const outputLink = document.createElement('a');
+      outputLink.href = URL.createObjectURL(outputBlob);
+      outputLink.download = `AAA${cipherSize}bytes.txt`;
+      outputLink.click();
+
+      // Save ASCII equivalence
+      let asciiText = "Caracter,Decimal,Hexadecimal\n";
+      for (let char in asciiEquivalence) {
+        asciiText += `${char},${asciiEquivalence[char].decimal},${asciiEquivalence[char].hex}\n`;
+      }
+      const asciiBlob = new Blob([asciiText], {type: 'text/plain'});
+      const asciiLink = document.createElement('a');
+      asciiLink.href = URL.createObjectURL(asciiBlob);
+      asciiLink.download = `AAA${cipherSize}bytes_ascii.txt`;
+      asciiLink.click();
+    }
+
+    function cipher() {
+      const text = document.getElementById('inputText').value;
+      cipherSize = parseInt(document.getElementById('cipherSize').value);
+      let cipheredText = '';
+      asciiEquivalence = {};
+      for (let i = 0; i < text.length; i++) {
+        const charCode = text.charCodeAt(i);
+        const hexCode = charCode.toString(16).padStart(cipherSize, '0');
+        cipheredText += hexCode;
+        asciiEquivalence[text[i]] = {
+          decimal: charCode,
+          hex: hexCode
+        };
+      }
+      document.getElementById('outputText').value = cipheredText;
+      generateAsciiTable();
+    }
+
+    function decipher() {
+      const cipheredText = document.getElementById('inputText').value;
+      cipherSize = parseInt(document.getElementById('cipherSize').value);
+      let decipheredText = '';
+      asciiEquivalence = {};
+      
+      for (let i = 0; i < cipheredText.length; i += cipherSize) {
+        const hexCode = cipheredText.substr(i, cipherSize);
+        const charCode = parseInt(hexCode, 16);
+        if (isNaN(charCode)) {
+          console.error('Invalid hex code:', hexCode);
+          continue;
+        }
+        const char = String.fromCharCode(charCode);
+        decipheredText += char;
+        asciiEquivalence[char] = {
+          decimal: charCode,
+          hex: hexCode
+        };
+      }
+      
+      document.getElementById('outputText').value = decipheredText;
+      generateAsciiTable();
+    }
+
+    function generateAsciiTable() {
+      const tableContainer = document.getElementById('asciiTableContainer');
+      let tableHTML = '<table><tr><th>Carácter</th><th>Decimal</th><th>Hexadecimal</th></tr>';
+      
+      for (let char in asciiEquivalence) {
+        const decimal = asciiEquivalence[char].decimal;
+        const hex = asciiEquivalence[char].hex;
+        tableHTML += `<tr><td>${decimal < 32 || decimal > 126 ? '&nbsp;' : char}</td><td>${decimal}</td><td>${hex}</td></tr>`;
+      }
+      
+      tableHTML += '</table>';
+      tableContainer.innerHTML = tableHTML;
+    }
+
+    // Parallax effect
+    const parallaxContainer = document.querySelector('.parallax-container');
+    const sky = document.querySelector('.sky');
+    const stars = document.querySelector('.stars');
+    const sun = document.querySelector('.sun');
+    const moon = document.querySelector('.moon');
+
+    parallaxContainer.addEventListener('scroll', function() {
+      const scrollPosition = parallaxContainer.scrollTop;
+      const containerHeight = parallaxContainer.clientHeight;
+      const scrollPercentage = scrollPosition / (parallaxContainer.scrollHeight - containerHeight);
+
+      // Update sky color
+      const skyColor = `linear-gradient(to bottom, 
+        hsl(${200 - scrollPercentage * 200}, ${80 - scrollPercentage * 60}%, ${70 - scrollPercentage * 65}%),
+        hsl(${200 - scrollPercentage * 200}, ${80 - scrollPercentage * 60}%, ${85 - scrollPercentage * 80}%))`;
+      sky.style.background = skyColor;
+
+      // Update stars visibility
+      stars.style.opacity = Math.min(scrollPercentage * 2, 1);
+
+      // Move sun and moon
+      const sunPosition = 50 - scrollPercentage * 200;
+      const moonPosition = -150 + scrollPercentage * 200;
+      sun.style.top = `${sunPosition}px`;
+      moon.style.top = `${moonPosition}px`;
+    });
+
+    // Generate initial ASCII table
+    generateAsciiTable();
+  </script>
+</body></html>
